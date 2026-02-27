@@ -1,0 +1,12 @@
+[package]
+name = "rust_aoc_2025_g2"
+version = "0.1.0"
+edition = "2024"
+
+[[bench]]
+name="d1"
+path = "src/bench_d1.rs"
+harness = false
+
+[dependencies]
+criterion = "0.8.2"
