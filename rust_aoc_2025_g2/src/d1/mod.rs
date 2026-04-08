@@ -1,39 +1,36 @@
-use std::time::Duration;
-
 #[allow(unused)]
 pub fn d1p1_v1(s: &str) -> usize {
     let mut position:usize = 50;
     let mut password = 0;
     // println!("Start position : {}", position);
     for line in s.lines() {
-        if line.starts_with("L") {
-            let value = line.trim_start_matches("L").parse::<i32>().unwrap();
-            let new_position = position as i32;
+        if line.starts_with('L') {
+            let value = line.trim_start_matches('L').parse::<i32>().unwrap();
+            let new_position = i32::try_from(position).unwrap();
             let new_position = (new_position - value%100);
             if new_position < 0 {
-                position = (100 + new_position) as usize;
+                position = usize::try_from(100 + new_position).unwrap();
             } else {
-                position = new_position as usize;
+                position = usize::try_from(new_position).unwrap();
             }
-        } else if line.starts_with("R") {
-            let value = line.trim_start_matches("R").parse::<i32>().unwrap();
-            let new_position = position as i32;
+        } else if line.starts_with('R') {
+            let value = line.trim_start_matches('R').parse::<i32>().unwrap();
+            let new_position = i32::try_from(position).unwrap();
             let new_position = (new_position + value%100);
             if new_position >= 100 {
-                position = (new_position - 100) as usize;
+                position = usize::try_from(new_position - 100).unwrap();
             } else {
-                position = new_position as usize;
+                position = usize::try_from(new_position).unwrap();
             }
         }
         if (position == 0) {
-            password = password + 1;
+            password += 1;
         }
         // println!("Turn is {}. New position is {}. Password is {}.", position, line, password);
     }
     password
 }
 
-#[inline(always)]
 fn skip_newlines(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len() {
         let b = bytes[i];
@@ -46,14 +43,13 @@ fn skip_newlines(bytes: &[u8], mut i: usize) -> usize {
     i
 }
 
-#[inline(always)]
 fn parse_u32_until_eol(bytes: &[u8], mut i: usize) -> (u32, usize) {
     // Parse un entier positif (suite de digits) jusqu'à fin de ligne (ou fin du buffer).
     let mut n: u32 = 0;
     while i < bytes.len() {
         let b = bytes[i];
-        if (b'0'..=b'9').contains(&b) {
-            n = n * 10 + (b - b'0') as u32;
+        if b.is_ascii_digit() {
+            n = n * 10 + u32::from(b - b'0');
             i += 1;
         } else {
             break;
@@ -92,7 +88,7 @@ pub fn d1p1_v2(s: &str) -> usize {
             i += 1;
         }
 
-        let step = (value % 100) as i32;
+        let step = i32::try_from(value % 100).unwrap();
 
         match op {
             b'L' => {
@@ -128,54 +124,52 @@ pub fn d1p2_v1(s: &str) -> usize {
     let mut password:usize = 0;
     for line in s.lines() {
         let mut passes = 0;
-        if line.starts_with("L") {
-            let mut value = line.trim_start_matches("L").parse::<i32>().unwrap();
+        if line.starts_with('L') {
+            let mut value = line.trim_start_matches('L').parse::<i32>().unwrap();
             for i in 0..value {
-                position = position - 1;
+                position -= 1;
                 if position == -1 {
                     position = 99;
                 }
                 if position == 0 {
-                    passes = passes + 1;
+                    passes += 1;
                 }
             }
-        } else if line.starts_with("R") {
-            let mut value = line.trim_start_matches("R").parse::<i32>().unwrap();
+        } else if line.starts_with('R') {
+            let mut value = line.trim_start_matches('R').parse::<i32>().unwrap();
             for i in 0..value {
-                position = position + 1;
+                position += 1;
                 if position == 100 {
                     position = 0;
                 }
                 if (position == 0) {
-                    passes = passes + 1;
+                    passes += 1;
                 }
             }
         }
-        password = password + passes as usize;
+        password += passes;
     }
     password
 }
 
-#[inline(always)]
 fn count_passes_right(pos: i32, k: u32) -> (usize, i32) {
     // anneau taille 100, pos dans [0,99]
-    let full = (k / 100) as usize;
-    let r = (k % 100) as i32;
+    let full = usize::try_from(k / 100).unwrap();
+    let r = i32::try_from(k % 100).unwrap();
 
     // wrap sur le reste si pos + r >= 100
-    let wrap = ((pos + r) >= 100) as usize;
+    let wrap = usize::from((pos + r) >= 100);
 
     let new_pos = (pos + r) % 100;
     (full + wrap, new_pos)
 }
 
-#[inline(always)]
 fn count_passes_left(pos: i32, k: u32) -> (usize, i32) {
     let full = (k / 100) as usize;
-    let r = (k % 100) as i32;
+    let r = i32::try_from(k % 100).unwrap();
 
     // wrap sur le reste si pos - r < 0
-    let wrap = ((pos - r) < 0) as usize;
+    let wrap = usize::from((pos - r) < 0);
 
     let mut new_pos = pos - r;
     new_pos %= 100;

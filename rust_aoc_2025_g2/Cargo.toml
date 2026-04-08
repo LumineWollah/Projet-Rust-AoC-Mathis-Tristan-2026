@@ -8,5 +8,10 @@ name="d1"
 path = "src/bench_d1.rs"
 harness = false
 
+[[bench]]
+name="d2"
+path = "src/bench_d2.rs"
+harness = false
+
 [dependencies]
 criterion = "0.8.2"
