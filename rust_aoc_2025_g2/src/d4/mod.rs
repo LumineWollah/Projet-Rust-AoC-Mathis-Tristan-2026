@@ -51,7 +51,13 @@ fn count_adjacent_rolls_owned(
     adjacent_rolls
 }
 
-fn count_adjacent_rolls_borrowed(grid: &[&[u8]], x: usize, y: usize, width: usize, height: usize) -> usize {
+fn count_adjacent_rolls_borrowed(
+    grid: &[&[u8]], 
+    x: usize, 
+    y: usize, 
+    width: usize, 
+    height: usize
+) -> usize {
     let y_start = y.saturating_sub(1);
     let y_end = (y + 1).min(height - 1);
     let x_start = x.saturating_sub(1);
