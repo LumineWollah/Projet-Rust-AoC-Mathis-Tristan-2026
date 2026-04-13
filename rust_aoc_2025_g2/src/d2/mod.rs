@@ -135,6 +135,8 @@ pub fn d2p2_v1(s: &str) -> usize {
 
 #[allow(unused)]
 pub fn d2p2_v2(s: &str) -> usize {
+    // Optimisation: avoid string conversions and allocations by working directly with digits.
+    
     fn is_invalid_id(n: usize) -> bool {
         // Count digits
         let mut len = 0usize;

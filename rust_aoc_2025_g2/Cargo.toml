@@ -13,5 +13,15 @@ name="d2"
 path = "src/bench_d2.rs"
 harness = false
 
+[[bench]]
+name="d4"
+path = "src/bench_d4.rs"
+harness = false
+
+[[bench]]
+name="d6"
+path = "src/bench_d6.rs"
+harness = false
+
 [dependencies]
 criterion = "0.8.2"
