@@ -1,0 +1,24 @@
+use crate::d5::{d5p1_v2, d5p2_v1};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
+
+mod d5;
+
+// d5p1_v1 n'est volontairement pas benchmarké : sur les vraies données il essaie
+// d'allouer ~36 To en matérialisant tous les ids des ranges et plante.
+pub fn d5p1(c: &mut Criterion) {
+    let mut group = c.benchmark_group("d5p1");
+    group.bench_function("d5p1_v2", |b| {
+        b.iter(|| d5p1_v2(black_box(include_str!("d5/d5.txt"))))
+    });
+}
+
+pub fn d5p2(c: &mut Criterion) {
+    let mut group = c.benchmark_group("d5p2");
+    group.bench_function("d5p2_v1", |b| {
+        b.iter(|| d5p2_v1(black_box(include_str!("d5/d5.txt"))))
+    });
+}
+
+criterion_group!(benches, d5p1, d5p2);
+criterion_main!(benches);
