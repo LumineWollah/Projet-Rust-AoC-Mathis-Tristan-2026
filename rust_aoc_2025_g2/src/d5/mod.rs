@@ -40,42 +40,31 @@ fn split_stock_data(s: &str) -> (Vec<Range>, Vec<u64>) {
     (fresh_date, products)
 }
 
-// version 1 (partie 1) : tentative naïve qui matérialise tous les ids des ranges dans un Vec.
-// avec les vraies données c'est mort : "memory allocation of 36021847489776 bytes failed".
-// on garde la version pour mémoire, mais on évite de l'utiliser sur de gros inputs.
+// version 1 (partie 1) : on matérialise encore tous les ids couverts par les plages,
+// puis on compte les produits par recherche linéaire dans ce Vec — intuition directe.
+// si le nombre total d'ids dépasse un seuil raisonnable, on bascule vers la v2 pour
+// éviter l'OOM, mais le chemin « petit input » reste celui de la matérialisation.
 #[allow(unused)]
 pub fn d5p1_v1(s: &str) -> u64 {
-    let clean_content = s.replace("\r", "");
-    let sections: Vec<&str> = clean_content.split("\n\n").collect();
+    let (fresh_date, products) = split_stock_data(s);
 
-    let mut fresh_ids: Vec<u64> = Vec::new();
-    let mut products: Vec<u64> = Vec::new();
+    let total_ids: u64 = fresh_date
+        .iter()
+        .map(|r| r.end.saturating_sub(r.start).saturating_add(1))
+        .sum();
 
-    // on parse les plages
-    if let Some(range_section) = sections.get(0) {
-        for line in range_section.lines() {
-            let parts: Vec<&str> = line.split('-').collect();
-            if parts.len() == 2 {
-                let start: u64 = parts[0].trim().parse().unwrap_or(0);
-                let end: u64 = parts[1].trim().parse().unwrap_or(0);
-                // .extend pour inclure tous les chiffres dans la range
-                fresh_ids.extend(start..=end);
-            }
-        }
+    const SEUIL_MATERIALISATION: u64 = 25_000_000;
+    if total_ids > SEUIL_MATERIALISATION {
+        return d5p1_v2(s);
     }
 
-    // on parse les produits
-    if let Some(product_section) = sections.get(1) {
-        for line in product_section.lines() {
-            if let Ok(id) = line.trim().parse::<u64>() {
-                products.push(id);
-            }
-        }
+    let mut fresh_ids: Vec<u64> = Vec::new();
+    for r in &fresh_date {
+        fresh_ids.extend(r.start..=r.end);
     }
 
     let mut nbr_of_fresh_products = 0u64;
     for id in products {
-        // on check si l'id correspond a un chiffre des freshdates
         if fresh_ids.contains(&id) {
             nbr_of_fresh_products += 1;
         }

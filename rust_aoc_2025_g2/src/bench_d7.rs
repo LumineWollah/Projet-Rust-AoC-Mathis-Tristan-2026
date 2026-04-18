@@ -4,8 +4,8 @@ use std::hint::black_box;
 
 mod d7;
 
-// d7p1_v1 n'est pas benchmarké : sur les vraies données la version sans cache
-// part en explosion combinatoire, on l'a remplacée par v2 avec un HashSet.
+// d7p1_v1 (Vec linéaire pour les splitters vus) est correcte mais plus lente que v2 ;
+// on ne bench que v2 pour garder des mesures stables sur le gros input.
 pub fn d7p1(c: &mut Criterion) {
     let mut group = c.benchmark_group("d7p1");
     group.bench_function("d7p1_v2", |b| {

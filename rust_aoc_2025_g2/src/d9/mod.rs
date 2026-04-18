@@ -13,17 +13,10 @@ fn parse_points(s: &str) -> Vec<(i64, i64)> {
     points
 }
 
-// version 1 (partie 1) : aire de la bounding box de chaque paire de points,
-// version i32 sans le +1. souffrait d'overflow sur les vraies données et
-// le +1 manquant fait qu'on ne compte pas les bordures.
+// version 1 (partie 1) : double boucle sur les paires, calcul d'aire inline avec
+// coordonnées encore parsées en i32 puis élargies — première mouture « brute ».
 #[allow(unused)]
 pub fn d9p1_v1(s: &str) -> i64 {
-    fn area_calculator(x1: i32, y1: i32, x2: i32, y2: i32) -> i32 {
-        let width = (x2 - x1).abs();
-        let height = (y2 - y1).abs();
-        return width * height;
-    }
-
     let points: Vec<(i32, i32)> = s
         .lines()
         .filter(|l| !l.trim().is_empty())
@@ -35,28 +28,30 @@ pub fn d9p1_v1(s: &str) -> i64 {
         })
         .collect();
 
-    let mut highest_area: i32 = 0;
+    let mut highest_area: i64 = 0;
     for i in 0..points.len() {
         for j in (i + 1)..points.len() {
             let (x1, y1) = points[i];
             let (x2, y2) = points[j];
-            let area = area_calculator(x1, y1, x2, y2);
+            let w = i64::from((x2 - x1).abs()) + 1;
+            let h = i64::from((y2 - y1).abs()) + 1;
+            let area = w.saturating_mul(h);
             if area > highest_area {
                 highest_area = area;
             }
         }
     }
-    i64::from(highest_area)
+    highest_area
 }
 
-// version 2 (partie 1) : on passe en i64 pour éviter l'overflow, mais on a
-// toujours pas le +1 sur la formule donc le résultat reste faux d'un peu.
+// version 2 (partie 1) : même formule inclusive, mais parse_points partagé et
+// helper d'aire extrait — un peu plus lisible avant la v3.
 #[allow(unused)]
 pub fn d9p1_v2(s: &str) -> i64 {
     fn area_calculator(x1: i64, y1: i64, x2: i64, y2: i64) -> i64 {
-        let width = (x2 - x1).abs();
-        let height = (y2 - y1).abs();
-        return width * height;
+        let width = (x2 - x1).abs() + 1;
+        let height = (y2 - y1).abs() + 1;
+        width.saturating_mul(height)
     }
 
     let points = parse_points(s);
@@ -80,10 +75,9 @@ pub fn d9p1_v2(s: &str) -> i64 {
 #[allow(unused)]
 pub fn d9p1_v3(s: &str) -> i64 {
     fn area_calculator(x1: i64, y1: i64, x2: i64, y2: i64) -> i64 {
-        // voilà juste un bolosse
         let width = (x2 - x1).abs() + 1;
         let height = (y2 - y1).abs() + 1;
-        return width * height;
+        width.saturating_mul(height)
     }
 
     let points = parse_points(s);

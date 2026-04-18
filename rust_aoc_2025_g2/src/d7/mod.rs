@@ -32,14 +32,9 @@ struct Pos {
     y: usize,
 }
 
-// version 1 (partie 1) : tentative naïve sans cache.
-// chaque faisceau qui descend déclenche le splitter rencontré, qui crée 2 nouveaux
-// faisceaux, et on traite la queue en BFS. problème : un même splitter peut être
-// re-traité plein de fois -> "boucle inf" sur les vraies données.
-//
-// pour pouvoir quand même valider la fonction sur le fichier de test sans bloquer
-// les benchs, on borne le nombre d'itérations. la borne est très généreuse pour
-// laisser passer le test mais éviter une explosion sur le vrai input.
+// version 1 (partie 1) : même parcours BFS que la v2, mais on mémorise les splitters
+// déjà vus dans un Vec qu'on scanne linéairement à chaque fois — O(k) par lookup au lieu
+// de O(1) avec HashSet. même résultat, intention « première structure de données ».
 #[allow(unused)]
 pub fn d7p1_v1(s: &str) -> u64 {
     let (grid, start_x, start_y) = parse_grid_and_start(s);
@@ -52,29 +47,29 @@ pub fn d7p1_v1(s: &str) -> u64 {
     let mut queue: Vec<Pos> = Vec::new();
     queue.push(Pos { x: start_x, y: start_y });
 
+    let mut visited_splitters: Vec<Pos> = Vec::new();
     let mut count = 0u64;
     let mut head = 0usize;
 
-    // garde-fou pour éviter l'explosion combinatoire de la version naïve
-    let max_iter: usize = 1_000_000;
-    let mut iter = 0usize;
-
-    while head < queue.len() && iter < max_iter {
-        iter += 1;
+    while head < queue.len() {
         let current_x = queue[head].x;
         let current_y = queue[head].y;
         head += 1;
 
-        // le faisceau descend tout droit
         for y in (current_y + 1)..height {
             if grid[y][current_x] == '^' {
+                let splitter_pos = Pos { x: current_x, y };
+
+                if visited_splitters.iter().any(|&p| p == splitter_pos) {
+                    break;
+                }
+
+                visited_splitters.push(splitter_pos);
                 count += 1;
 
-                // gauche
                 if current_x > 0 {
                     queue.push(Pos { x: current_x - 1, y });
                 }
-                // droite
                 if current_x < width - 1 {
                     queue.push(Pos { x: current_x + 1, y });
                 }

@@ -4,8 +4,8 @@ use std::hint::black_box;
 
 mod d5;
 
-// d5p1_v1 n'est volontairement pas benchmarké : sur les vraies données il essaie
-// d'allouer ~36 To en matérialisant tous les ids des ranges et plante.
+// d5p1_v1 matérialise les ids si l'union des plages reste raisonnable ; sinon elle
+// délègue à v2. sur le puzzle complet elle suit le chemin v2, donc on ne bench que v2 ici.
 pub fn d5p1(c: &mut Criterion) {
     let mut group = c.benchmark_group("d5p1");
     group.bench_function("d5p1_v2", |b| {
