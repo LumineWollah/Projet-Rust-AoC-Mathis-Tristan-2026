@@ -7,7 +7,6 @@ use crate::d6::{d6p1,d6p2};
 use crate::d7::{d7p1,d7p2};
 use crate::d8::{d8p1,d8p2};
 use crate::d9::{d9p1,d9p2};
-use crate::d11::{d11p1,d11p2};
 
 mod d1;
 mod d2;
@@ -18,7 +17,6 @@ mod d6;
 mod d7;
 mod d8;
 mod d9;
-mod d11;
 
 
 fn main() {
@@ -40,6 +38,4 @@ fn main() {
     println!("D8P2 : {}", d8p2(include_str!("d8/d8.txt"))); // 8465902405
     println!("D9P1 : {}", d9p1(include_str!("d9/d9.txt")));
     println!("D9P2 : {}", d9p2(include_str!("d9/d9.txt")));
-    println!("D11P1 : {}", d11p1(include_str!("d11/d11.txt")));
-    println!("D11P2 : {}", d11p2(include_str!("d11/d11.txt")));
 }
