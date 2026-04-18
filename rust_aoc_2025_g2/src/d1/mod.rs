@@ -75,7 +75,7 @@ pub fn d1p1_v2(s: &str) -> usize {
         let op = bytes[i];
         i += 1;
 
-        // (optionnel) skip espaces si jamais
+        //skip espaces si jamais
         while i < bytes.len() && bytes[i] == b' ' {
             i += 1;
         }
@@ -83,7 +83,7 @@ pub fn d1p1_v2(s: &str) -> usize {
         let (value, mut j) = parse_u32_until_eol(bytes, i);
         i = j;
 
-        // saute jusqu'à la fin de ligne (au cas où il reste des espaces/tabs)
+        // saute jusqu'à la fin de ligne
         while i < bytes.len() && bytes[i] != b'\n' && bytes[i] != b'\r' {
             i += 1;
         }
@@ -108,7 +108,7 @@ pub fn d1p1_v2(s: &str) -> usize {
                 position = new_pos;
             }
             _ => {
-                // ligne invalide -> on ignore (ou tu peux panic si tu veux)
+                // ligne invalide -> on ignore
             }
         }
         if position == 0 {
