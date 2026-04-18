@@ -1,105 +1,126 @@
-// version 1 (partie 1) : on cherche les deux plus grands chiffres de chaque ligne.
-// première tentative très naïve : on parcourt et on garde les deux meilleurs caractères vus.
-// bug connu : on retourne `first as i32` au lieu de l'entier formé par "first|second",
-// donc on additionne en réalité les codes ASCII. on garde la fonction telle quelle pour
-// montrer l'évolution de la réflexion.
+// version 1 (partie 1) : double boucle sur toutes les paires de positions i < j.
+// idée naïve : on teste explicitement chaque couple (dizaine, unité) dans l'ordre
+// de la ligne. correct mais O(n²) par banque.
 #[allow(unused)]
 pub fn d3p1_v1(s: &str) -> i64 {
-    fn found_best_nbr_in_bank(line: String) -> i32 {
-        let mut first = '0';
-        let mut second = '0';
-
-        for nbr in line.chars() {
-            if first < nbr {
-                first = nbr;
-            } else if second < nbr && second < first {
-                second = nbr;
+    fn max_joltage_bank(line: &str) -> i64 {
+        let digits: Vec<u8> = line.bytes().map(|b| b - b'0').collect();
+        let n = digits.len();
+        if n < 2 {
+            return 0;
+        }
+        let mut best = 0i64;
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let v = i64::from(digits[i]) * 10 + i64::from(digits[j]);
+                if v > best {
+                    best = v;
+                }
             }
         }
-        // bug volontaire conservé : on ne renvoie que le code ascii du premier
-        return first as i32;
+        best
     }
 
     let mut count: i64 = 0;
     for bank in s.lines() {
-        count += i64::from(found_best_nbr_in_bank(bank.to_string()));
+        if bank.trim().is_empty() {
+            continue;
+        }
+        count += max_joltage_bank(bank);
     }
     count
 }
 
-// version 2 (partie 1) : on corrige le bug en formattant correctement les deux chiffres
-// pour obtenir un vrai entier à deux chiffres avant addition.
+// version 2 (partie 1) : une passe suffixe pour connaître le max à droite de chaque
+// indice, puis un seul parcours O(n) par ligne. même résultat que la v1, moins de travail.
 #[allow(unused)]
 pub fn d3p1_v2(s: &str) -> i64 {
-    fn found_best_nbr_in_bank(line: String) -> i32 {
-        let mut first = '0';
-        let mut second = '0';
-
-        for nbr in line.chars() {
-            if first < nbr {
-                first = nbr;
-            } else if second < nbr && second < first {
-                second = nbr;
+    fn max_joltage_bank(line: &str) -> i64 {
+        let digits: Vec<u8> = line.bytes().map(|b| b - b'0').collect();
+        let n = digits.len();
+        if n < 2 {
+            return 0;
+        }
+        // max_after[i] = meilleur chiffre strictement à droite de l'indice i
+        let mut max_after = vec![0u8; n];
+        for i in (0..n - 1).rev() {
+            max_after[i] = digits[i + 1].max(max_after[i + 1]);
+        }
+        let mut best = 0i64;
+        for i in 0..(n - 1) {
+            let v = i64::from(digits[i]) * 10 + i64::from(max_after[i]);
+            if v > best {
+                best = v;
             }
         }
-
-        // on combine first et second en une vraie valeur numérique
-        let final_nbr = format!("{}{}", first, second);
-        let result: i32 = final_nbr.parse().unwrap();
-        result
+        best
     }
 
     let mut count: i64 = 0;
     for bank in s.lines() {
-        count += i64::from(found_best_nbr_in_bank(bank.to_string()));
+        if bank.trim().is_empty() {
+            continue;
+        }
+        count += max_joltage_bank(bank);
     }
     count
 }
 
-// version 1 (partie 2) : approche brute force.
-// on essaie toutes les fenêtres consécutives de 12 chiffres et on garde le maximum.
-// problème : la consigne autorise des chiffres non consécutifs, donc cette version
-// rate les meilleures combinaisons.
+// version 1 (partie 2) : programmation dynamique — on choisit exactement 12 chiffres
+// dans l'ordre (sous-suite). encore une approche exhaustive dans l'esprit, mais avec
+// mémo O(n·12) au lieu d'énumérer des combinaisons une par une à la main.
 #[allow(unused)]
 pub fn d3p2_v1(s: &str) -> i64 {
-    fn found_best_nbr_in_bank(line: String) -> i64 {
-        let mut max_joltage: i64 = 0;
-        let chars: Vec<char> = line.chars().collect();
-
-        // on vérifie qu'il y a au moins 12 chiffres
-        if chars.len() < 12 {
+    fn max_joltage_bank(line: &str) -> i64 {
+        let s: Vec<u8> = line.bytes().map(|b| b - b'0').collect();
+        let n = s.len();
+        let k = 12;
+        if n < k {
             return 0;
         }
 
-        for window in chars.windows(12) {
-            // on transforme les 12 caracteres en une string
-            let sequence: String = window.iter().collect();
-            // on transforme tout ca en nombre
-            let current_joltage: i64 = sequence.parse().unwrap_or(0);
+        // dp[i][t] = meilleur nombre à t chiffres obtenu avec les caractères d'indice >= i
+        let mut dp = vec![vec![None::<i64>; k + 1]; n + 1];
+        for i in 0..=n {
+            dp[i][0] = Some(0);
+        }
+        for t in 1..=k {
+            dp[n][t] = None;
+        }
 
-            if current_joltage > max_joltage {
-                max_joltage = current_joltage;
+        for i in (0..n).rev() {
+            for t in 1..=k {
+                let skip = dp[i + 1][t];
+                let take = dp[i + 1][t - 1].map(|sub| {
+                    i64::from(s[i]) * 10_i64.pow((t - 1) as u32) + sub
+                });
+                dp[i][t] = match (skip, take) {
+                    (Some(a), Some(b)) => Some(a.max(b)),
+                    (Some(a), None) => Some(a),
+                    (None, Some(b)) => Some(b),
+                    (None, None) => None,
+                };
             }
         }
 
-        max_joltage
+        dp[0][k].unwrap_or(0)
     }
 
     let mut count: i64 = 0;
     for bank in s.lines() {
-        count += found_best_nbr_in_bank(bank.to_string());
+        if bank.trim().is_empty() {
+            continue;
+        }
+        count += max_joltage_bank(bank);
     }
     count
 }
 
-// version 2 (partie 2) : version finale gloutonne avec une pile.
-// on parcourt les chiffres en gardant l'ordre original et on supprime les chiffres
-// précédents tant qu'ils sont plus petits que celui qu'on regarde, dans la limite
-// du nombre de chiffres qu'on peut se permettre de retirer (longueur - 12).
-// à la fin on ne garde que les 12 premiers de la pile.
+// version 2 (partie 2) : pile gloutonne — on retire les petits chiffres quand on peut
+// encore « payer » des suppressions pour maximiser les 12 premiers de la pile finale.
 #[allow(unused)]
 pub fn d3p2_v2(s: &str) -> i64 {
-    fn found_best_nbr_in_bank(line: String) -> i64 {
+    fn max_joltage_bank(line: String) -> i64 {
         let chars: Vec<char> = line.chars().collect();
         if chars.len() < 12 {
             return 0;
@@ -109,8 +130,6 @@ pub fn d3p2_v2(s: &str) -> i64 {
         let mut stack: Vec<char> = Vec::new();
 
         for c in chars {
-            // tant qu'on peut supprimer et que le chiffre actuel est plus grand que
-            // le dernier ajoute à notre pile on retire le dernier
             while removed < to_remove && !stack.is_empty() && stack.last().unwrap() < &c {
                 stack.pop();
                 removed += 1;
@@ -118,16 +137,16 @@ pub fn d3p2_v2(s: &str) -> i64 {
             stack.push(c);
         }
 
-        // on s'assure de ne garder que les 12 premiers au cas où on n'a pas assez supprimé
         let result_str: String = stack.iter().take(12).collect();
-        let max_joltage: i64 = result_str.parse().unwrap_or(0);
-
-        max_joltage
+        result_str.parse().unwrap_or(0)
     }
 
     let mut count: i64 = 0;
     for bank in s.lines() {
-        count += found_best_nbr_in_bank(bank.to_string());
+        if bank.trim().is_empty() {
+            continue;
+        }
+        count += max_joltage_bank(bank.to_string());
     }
     count
 }
@@ -151,10 +170,8 @@ mod tests {
         let s = include_str!("d3_test.txt");
         let result: i64 = d3p1(s);
         println!("result: {}", result);
-        // pour chaque ligne du fichier de test on prend "first|second" selon l'algorithme :
-        // (la logique conserve volontairement le bug : second n'est jamais réévalué
-        // quand first est remplacé, donc la somme dépend de l'ordre d'apparition)
-        assert_eq!(371, result);
+        // exemple officiel AoC : 98 + 89 + 78 + 92
+        assert_eq!(357, result);
     }
 
     #[test]
@@ -162,7 +179,6 @@ mod tests {
         let s = include_str!("d3_test.txt");
         let result: i64 = d3p2(s);
         println!("result: {}", result);
-        // somme des plus grands nombres à 12 chiffres extraits par la pile gloutonne
         assert_eq!(3_121_910_778_619, result);
     }
 }
