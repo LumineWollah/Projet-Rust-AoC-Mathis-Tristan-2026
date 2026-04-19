@@ -14,23 +14,13 @@ path = "src/bench_d2.rs"
 harness = false
 
 [[bench]]
-name="d4"
-path = "src/bench_d4.rs"
-harness = false
-
-[[bench]]
-name="d6"
-path = "src/bench_d6.rs"
-harness = false
-
-[[bench]]
-name="d8"
-path = "src/bench_d8.rs"
-harness = false
-
-[[bench]]
 name="d3"
 path = "src/bench_d3.rs"
+harness = false
+
+[[bench]]
+name="d4"
+path = "src/bench_d4.rs"
 harness = false
 
 [[bench]]
@@ -39,8 +29,18 @@ path = "src/bench_d5.rs"
 harness = false
 
 [[bench]]
+name="d6"
+path = "src/bench_d6.rs"
+harness = false
+
+[[bench]]
 name="d7"
 path = "src/bench_d7.rs"
+harness = false
+
+[[bench]]
+name="d8"
+path = "src/bench_d8.rs"
 harness = false
 
 [[bench]]

@@ -90,35 +90,6 @@ fn count_adjacent_rolls_borrowed(
     adjacent_rolls
 }
 
-fn count_adjacent_rolls_owned_bounded(
-    grid: &[Vec<u8>],
-    x: usize,
-    y: usize,
-    width: usize,
-    height: usize,
-) -> usize {
-    let y0 = if y > 0 { y - 1 } else { y };
-    let y1 = if y + 1 < height { y + 1 } else { y };
-    let x0 = if x > 0 { x - 1 } else { x };
-    let x1 = if x + 1 < width { x + 1 } else { x };
-
-    let mut adjacent_rolls = 0;
-
-    for (ny, row) in grid.iter().enumerate().skip(y0).take(y1 - y0 + 1) {
-        for (nx, &cell) in row.iter().enumerate().skip(x0).take(x1 - x0 + 1) {
-            if nx == x && ny == y {
-                continue;
-            }
-
-            if cell == b'@' {
-                adjacent_rolls += 1;
-            }
-        }
-    }
-
-    adjacent_rolls
-}
-
 #[allow(unused)]
 pub fn d4p1_v1(s: &str) -> usize {
     let grid = parse_grid_owned(s);
@@ -150,7 +121,7 @@ pub fn d4p1_v1(s: &str) -> usize {
 
 #[allow(unused)]
 pub fn d4p1_v2(s: &str) -> usize {
-    // Optimisation: no repeated isize <-> usize conversions, no manual bounds checks for each adjacent cell, and no need to copy lines (using &[u8] instead of Vec<u8>)
+    // Optimisation: no need to copy lines (using &[u8] instead of Vec<u8>)
 
     let grid = parse_grid_borrowed(s);
 
@@ -223,7 +194,7 @@ pub fn d4p2_v1(s: &str) -> usize {
 
 #[allow(unused)]
 pub fn d4p2_v2(s: &str) -> usize {
-    // Optimisation: reuse the removal buffer across iterations to avoid repeated allocations, use usize-only neighbor bounds to avoid repeated isize <-> usize conversions and manual bounds checks, and batch count removals with to_remove.len()
+    // Optimisation: reuse the removal buffer across iterations to avoid repeated allocations, and batch count removals with to_remove.len()
 
     let mut grid = parse_grid_owned(s);
 
@@ -245,7 +216,7 @@ pub fn d4p2_v2(s: &str) -> usize {
                     continue;
                 }
 
-                let adjacent_rolls = count_adjacent_rolls_owned_bounded(&grid, x, y, width, height);
+                let adjacent_rolls = count_adjacent_rolls_owned(&grid, x, y, width, height);
 
                 if adjacent_rolls < 4 {
                     to_remove.push((y, x));

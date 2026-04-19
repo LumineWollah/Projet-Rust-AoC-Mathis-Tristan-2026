@@ -1,7 +1,9 @@
+// Parse input lines as a vector of references to strings
 fn parse_lines_str(s: &str) -> Vec<&str> {
     s.lines().collect()
 }
 
+// Parse input lines as a vector of references to byte slices
 fn parse_lines_bytes(s: &str) -> Vec<&[u8]> {
     s.lines()
         .filter(|line| !line.is_empty())
@@ -9,14 +11,17 @@ fn parse_lines_bytes(s: &str) -> Vec<&[u8]> {
         .collect()
 }
 
+// Find the maximum width of lines for padding purposes
 fn max_width_str(lines: &[&str]) -> usize {
     lines.iter().map(|line| line.len()).max().unwrap_or(0)
 }
 
+// Find the maximum width of lines for padding purposes (for byte slices)
 fn max_width_bytes(lines: &[&[u8]]) -> usize {
     lines.iter().map(|line| line.len()).max().unwrap_or(0)
 }
 
+// Pad lines to a uniform width with spaces for easier column processing
 fn padded_grid(lines: &[&str], width: usize) -> Vec<Vec<u8>> {
     lines.iter()
         .map(|line| {
@@ -27,20 +32,24 @@ fn padded_grid(lines: &[&str], width: usize) -> Vec<Vec<u8>> {
         .collect()
 }
 
+// Check if a column is blank (only spaces) in the padded grid
 fn is_blank_column_padded(grid: &[Vec<u8>], x: usize) -> bool {
     grid.iter().all(|row| row[x] == b' ')
 }
 
+// Check if a column is blank (only spaces) in the original byte slice lines
 fn is_blank_column_bytes(lines: &[&[u8]], x: usize) -> bool {
     lines.iter().all(|row| x >= row.len() || row[x] == b' ')
 }
 
+// Parsing numbers directly from byte slices without intermediate string conversions
 fn parse_ascii_usize(bytes: &[u8]) -> usize {
     bytes.iter().fold(0_usize, |acc, &c| {
         acc * 10 + usize::from(c.saturating_sub(b'0'))
     })
 }
 
+// Evaluate a list of numbers with the given operator
 fn eval_numbers(numbers: Vec<usize>, op: u8) -> usize {
     match op {
         b'+' => numbers.into_iter().sum(),

@@ -24,18 +24,18 @@ fn main() {
     println!("D1P2 : {}", d1p2(include_str!("d1/d1.txt"))); // 6695
     println!("D2P1 : {}", d2p1(include_str!("d2/d2.txt"))); // 64215794229
     println!("D2P2 : {}", d2p2(include_str!("d2/d2.txt"))); // 85513235135
-    println!("D3P1 : {}", d3p1(include_str!("d3/d3.txt")));
-    println!("D3P2 : {}", d3p2(include_str!("d3/d3.txt")));
+    println!("D3P1 : {}", d3p1(include_str!("d3/d3.txt"))); // 17346
+    println!("D3P2 : {}", d3p2(include_str!("d3/d3.txt"))); // 172981362045136
     println!("D4P1 : {}", d4p1(include_str!("d4/d4.txt"))); // 1486
     println!("D4P2 : {}", d4p2(include_str!("d4/d4.txt"))); // 9024
-    println!("D5P1 : {}", d5p1(include_str!("d5/d5.txt")));
-    println!("D5P2 : {}", d5p2(include_str!("d5/d5.txt")));
+    println!("D5P1 : {}", d5p1(include_str!("d5/d5.txt"))); // 712
+    println!("D5P2 : {}", d5p2(include_str!("d5/d5.txt"))); // 332998283036769
     println!("D6P1 : {}", d6p1(include_str!("d6/d6.txt"))); // 4722948564882
     println!("D6P2 : {}", d6p2(include_str!("d6/d6.txt"))); // 9581313737063
-    println!("D7P1 : {}", d7p1(include_str!("d7/d7.txt")));
-    println!("D7P2 : {}", d7p2(include_str!("d7/d7.txt")));
+    println!("D7P1 : {}", d7p1(include_str!("d7/d7.txt"))); // 1635
+    println!("D7P2 : {}", d7p2(include_str!("d7/d7.txt"))); // 58097428661390
     println!("D8P1 : {}", d8p1(include_str!("d8/d8.txt"),1000)); // 181584
     println!("D8P2 : {}", d8p2(include_str!("d8/d8.txt"))); // 8465902405
-    println!("D9P1 : {}", d9p1(include_str!("d9/d9.txt")));
-    println!("D9P2 : {}", d9p2(include_str!("d9/d9.txt")));
+    println!("D9P1 : {}", d9p1(include_str!("d9/d9.txt"))); // 4758598740
+    println!("D9P2 : {}", d9p2(include_str!("d9/d9.txt"))); // 1474699155
 }

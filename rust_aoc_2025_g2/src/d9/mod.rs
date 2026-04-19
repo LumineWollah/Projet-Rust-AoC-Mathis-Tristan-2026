@@ -301,7 +301,7 @@ pub fn d9p1(s: &str) -> i64 {
 
 #[allow(unused)]
 pub fn d9p2(s: &str) -> i64 {
-    d9p2_v1(s)
+    d9p2_v3(s)
 }
 
 #[cfg(test)]

@@ -12,8 +12,6 @@ pub fn d2p1_v1(s: &str) -> usize {
         let half = len / 2;
         let (left, right) = text.split_at(half);
 
-        // No leading zeroes allowed for the whole ID.
-        // Since n is a usize parsed from a normal number, that is already guaranteed.
         left == right
     }
 
@@ -139,7 +137,7 @@ pub fn d2p2_v2(s: &str) -> usize {
     
     fn is_invalid_id(n: usize) -> bool {
         // Count digits
-        let mut len = 0usize;
+        let mut len = 0;
         let mut tmp = n;
         while tmp > 0 {
             len += 1;
@@ -228,7 +226,7 @@ mod tests {
         let s = include_str!("d2_test.txt");
         let result: usize = d2p1(s);
         println!("result: {}", result);
-        assert_eq!(1227775554, result);
+        assert_eq!(1_227_775_554, result);
     }
 
     #[test]
@@ -236,6 +234,6 @@ mod tests {
         let s = include_str!("d2_test.txt");
         let result: usize = d2p2(s);
         println!("result: {}", result);
-        assert_eq!(4174379265, result);
+        assert_eq!(4_174_379_265, result);
     }
 }

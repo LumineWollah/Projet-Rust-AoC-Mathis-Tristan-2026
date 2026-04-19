@@ -14,6 +14,7 @@ pub fn d8p1_v1(s: &str, connections: usize) -> usize {
         dx * dx + dy * dy + dz * dz
     }
 
+    // Returns root of component of given point index
     fn find(parent: &mut [usize], x: usize) -> usize {
         if parent[x] != x {
             parent[x] = find(parent, parent[x]);
@@ -21,6 +22,7 @@ pub fn d8p1_v1(s: &str, connections: usize) -> usize {
         parent[x]
     }
 
+    // Makes A root of B, connecting the two components
     fn union(parent: &mut [usize], size: &mut [usize], a: usize, b: usize) {
         let root_a = find(parent, a);
         let root_b = find(parent, b);
@@ -105,13 +107,15 @@ pub fn d8p1_v2(s: &str, connections: usize) -> usize {
         dx * dx + dy * dy + dz * dz
     }
 
+    // Returns root of component of given point index
     fn find(parent: &mut [usize], x: usize) -> usize {
         if parent[x] != x {
             parent[x] = find(parent, parent[x]);
         }
         parent[x]
     }
-
+    
+    // Makes A root of B, connecting the two components
     fn union(parent: &mut [usize], size: &mut [usize], a: usize, b: usize) {
         let mut root_a = find(parent, a);
         let mut root_b = find(parent, b);
@@ -120,6 +124,7 @@ pub fn d8p1_v2(s: &str, connections: usize) -> usize {
             return;
         }
 
+        // Union-by-size : the smaller tree is the one absorbed. Makes tree less deep, find() faster in practice
         if size[root_a] < size[root_b] {
             std::mem::swap(&mut root_a, &mut root_b);
         }
@@ -198,13 +203,15 @@ pub fn d8p2_v1(s: &str) -> usize {
         dx * dx + dy * dy + dz * dz
     }
 
+    // Returns root of component of given point index
     fn find(parent: &mut [usize], x: usize) -> usize {
         if parent[x] != x {
             parent[x] = find(parent, parent[x]);
         }
         parent[x]
     }
-
+    
+    // Makes A root of B, connecting the two components
     fn union(parent: &mut [usize], size: &mut [usize], a: usize, b: usize) -> bool {
         let root_a = find(parent, a);
         let root_b = find(parent, b);
@@ -283,13 +290,15 @@ pub fn d8p2_v2(s: &str) -> usize {
         dx * dx + dy * dy + dz * dz
     }
 
+    // Returns root of component of given point index
     fn find(parent: &mut [usize], x: usize) -> usize {
         if parent[x] != x {
             parent[x] = find(parent, parent[x]);
         }
         parent[x]
     }
-
+    
+    // Makes A root of B, connecting the two components
     fn union(parent: &mut [usize], size: &mut [usize], a: usize, b: usize) -> bool {
         let mut root_a = find(parent, a);
         let mut root_b = find(parent, b);
@@ -298,6 +307,7 @@ pub fn d8p2_v2(s: &str) -> usize {
             return false;
         }
 
+        // Union-by-size : the smaller tree is the one absorbed. Makes tree less deep, find() faster in practice
         if size[root_a] < size[root_b] {
             std::mem::swap(&mut root_a, &mut root_b);
         }
