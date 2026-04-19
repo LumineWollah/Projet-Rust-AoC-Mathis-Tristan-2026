@@ -240,21 +240,19 @@ pub fn d1p2(s: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::d1::{d1p1, d1p2};
-
     #[test]
     fn d1p1_test() {
         let s = include_str!("d1_test.txt");
-        let result: usize = d1p1(s);
-        println!("result: {}", result);
+        let result: usize = super::d1p1(s);
+        println!("result: {result}");
         assert_eq!(3, result);
     }
 
     #[test]
     fn d1p2_test() {
         let s = include_str!("d1_test.txt");
-        let result: usize = d1p2(s);
-        println!("result: {}", result);
+        let result: usize = super::d1p2(s);
+        println!("result: {result}");
         assert_eq!(6, result);
     }
 }

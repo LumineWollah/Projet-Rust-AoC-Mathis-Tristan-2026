@@ -48,10 +48,5 @@ name="d9"
 path = "src/bench_d9.rs"
 harness = false
 
-[[bench]]
-name="d11"
-path = "src/bench_d11.rs"
-harness = false
-
 [dependencies]
 criterion = "0.8.2"

@@ -13,6 +13,11 @@ fn parse_points(s: &str) -> Vec<(i64, i64)> {
     points
 }
 
+#[inline]
+fn grid_cell_index(coordinate: i64, bbox_low: i64) -> usize {
+    usize::try_from(coordinate - bbox_low).expect("coordinate within puzzle bounding box")
+}
+
 // version 1 (partie 1) : double boucle sur les paires, calcul d'aire inline avec
 // coordonnées encore parsées en i32 puis élargies — première mouture « brute ».
 #[allow(unused)]
@@ -48,32 +53,6 @@ pub fn d9p1_v1(s: &str) -> i64 {
 // helper d'aire extrait — un peu plus lisible avant la v3.
 #[allow(unused)]
 pub fn d9p1_v2(s: &str) -> i64 {
-    fn area_calculator(x1: i64, y1: i64, x2: i64, y2: i64) -> i64 {
-        let width = (x2 - x1).abs() + 1;
-        let height = (y2 - y1).abs() + 1;
-        width.saturating_mul(height)
-    }
-
-    let points = parse_points(s);
-
-    let mut highest_area: i64 = 0;
-    for i in 0..points.len() {
-        for j in (i + 1)..points.len() {
-            let (x1, y1) = points[i];
-            let (x2, y2) = points[j];
-            let area = area_calculator(x1, y1, x2, y2);
-            if area > highest_area {
-                highest_area = area;
-            }
-        }
-    }
-    highest_area
-}
-
-// version 3 (partie 1) : on ajoute le +1 dans la formule pour bien compter
-// les tuiles aux bornes inclusives. ça donne enfin le bon résultat de l'étape 1.
-#[allow(unused)]
-pub fn d9p1_v3(s: &str) -> i64 {
     fn area_calculator(x1: i64, y1: i64, x2: i64, y2: i64) -> i64 {
         let width = (x2 - x1).abs() + 1;
         let height = (y2 - y1).abs() + 1;
@@ -181,22 +160,22 @@ pub fn d9p2_v2(s: &str) -> i64 {
     }
 
     // limites pour la grille
-    let min_x_g = points.iter().map(|p| p.0).min().unwrap();
-    let max_x_g = points.iter().map(|p| p.0).max().unwrap();
-    let min_y_g = points.iter().map(|p| p.1).min().unwrap();
-    let max_y_g = points.iter().map(|p| p.1).max().unwrap();
+    let bbox_min_x = points.iter().map(|p| p.0).min().unwrap();
+    let bbox_max_x = points.iter().map(|p| p.0).max().unwrap();
+    let bbox_min_y = points.iter().map(|p| p.1).min().unwrap();
+    let bbox_max_y = points.iter().map(|p| p.1).max().unwrap();
 
     // creation grille de booleens pour gagner du temps
     // on decale les index de min_x et min_y pour que ca commence a zero
-    let largeur = (max_x_g - min_x_g + 1) as usize;
-    let hauteur = (max_y_g - min_y_g + 1) as usize;
+    let largeur = usize::try_from(bbox_max_x - bbox_min_x + 1).expect("bbox width fits usize");
+    let hauteur = usize::try_from(bbox_max_y - bbox_min_y + 1).expect("bbox height fits usize");
     let mut grille = vec![vec![false; hauteur]; largeur];
 
     // on remplit la grille une seule fois
-    for x in min_x_g..=max_x_g {
-        for y in min_y_g..=max_y_g {
+    for x in bbox_min_x..=bbox_max_x {
+        for y in bbox_min_y..=bbox_max_y {
             if est_autorise(x, y, &points) {
-                grille[(x - min_x_g) as usize][(y - min_y_g) as usize] = true;
+                grille[grid_cell_index(x, bbox_min_x)][grid_cell_index(y, bbox_min_y)] = true;
             }
         }
     }
@@ -219,7 +198,7 @@ pub fn d9p2_v2(s: &str) -> i64 {
             'test: for x in min_x..=max_x {
                 for y in min_y..=max_y {
                     // on utilise les index decales
-                    if !grille[(x - min_x_g) as usize][(y - min_y_g) as usize] {
+                    if !grille[grid_cell_index(x, bbox_min_x)][grid_cell_index(y, bbox_min_y)] {
                         rectangle_ok = false;
                         break 'test;
                     }
@@ -273,7 +252,11 @@ pub fn d9p2_v3(s: &str) -> i64 {
                 || !est_autorise(max_x, max_y, &points)
                 || !est_autorise(min_x, max_y, &points)
                 || !est_autorise(max_x, min_y, &points)
-                || !est_autorise((min_x + max_x) / 2, (min_y + max_y) / 2, &points)
+                || !est_autorise(
+                    i64::midpoint(min_x, max_x),
+                    i64::midpoint(min_y, max_y),
+                    &points,
+                )
             {
                 continue;
             }
@@ -281,18 +264,19 @@ pub fn d9p2_v3(s: &str) -> i64 {
             // on verifie si un mur traverse le rectangle
             let mut collision = false;
             for (p1, p2) in &segments {
-                let mur_x_dans = p1.0 > min_x && p1.0 < max_x;
-                let mur_y_dans = p1.1 > min_y && p1.1 < max_y;
-
                 if p1.0 == p2.0 {
-                    // mur vertical
-                    if mur_x_dans && !(p1.1.min(p2.1) >= max_y || p1.1.max(p2.1) <= min_y) {
+                    // mur vertical : colonne strictement entre min_x et max_x
+                    if (p1.0 > min_x && p1.0 < max_x)
+                        && !(p1.1.min(p2.1) >= max_y || p1.1.max(p2.1) <= min_y)
+                    {
                         collision = true;
                         break;
                     }
                 } else {
-                    // mur horizontal
-                    if mur_y_dans && !(p1.0.min(p2.0) >= max_x || p1.0.max(p2.0) <= min_x) {
+                    // mur horizontal : ligne strictement entre min_y et max_y
+                    if (p1.1 > min_y && p1.1 < max_y)
+                        && !(p1.0.min(p2.0) >= max_x || p1.0.max(p2.0) <= min_x)
+                    {
                         collision = true;
                         break;
                     }
@@ -312,23 +296,21 @@ pub fn d9p2_v3(s: &str) -> i64 {
 
 #[allow(unused)]
 pub fn d9p1(s: &str) -> i64 {
-    d9p1_v3(s)
+    d9p1_v2(s)
 }
 
 #[allow(unused)]
 pub fn d9p2(s: &str) -> i64 {
-    d9p2_v3(s)
+    d9p2_v1(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::d9::{d9p1, d9p2};
-
     #[test]
     fn d9p1_test() {
         let s = include_str!("d9_test.txt");
-        let result = d9p1(s);
-        println!("result: {}", result);
+        let result = super::d9p1(s);
+        println!("result: {result}");
         // bounding box max parmi toutes les paires de points : (2,3)-(11,7)
         // -> (11-2+1) * (7-3+1) = 10 * 5 = 50 (et plusieurs autres pairs donnent aussi 50)
         assert_eq!(50, result);
@@ -337,8 +319,8 @@ mod tests {
     #[test]
     fn d9p2_test() {
         let s = include_str!("d9_test.txt");
-        let result = d9p2(s);
-        println!("result: {}", result);
+        let result = super::d9p2(s);
+        println!("result: {result}");
         // plus grand rectangle, dont les coins sont des sommets du polygone,
         // entièrement contenu : pair (2,3)-(9,5) -> 8*3 = 24
         assert_eq!(24, result);

@@ -5,19 +5,22 @@ struct Range {
     end: u64,
 }
 
+/// Au-delà, la matérialisation de tous les ids (v1) dépasserait une RAM raisonnable.
+const SEUIL_MATERIALISATION: u64 = 25_000_000;
+
 // parse le contenu en deux sections séparées par une ligne vide :
 // - une liste de ranges sous forme "start-end"
 // - une liste de produits (un id par ligne)
 fn split_stock_data(s: &str) -> (Vec<Range>, Vec<u64>) {
     // on neutralise les retours chariot windows pour pouvoir splitter sur "\n\n"
-    let clean_content = s.replace("\r", "");
+    let clean_content = s.replace('\r', "");
     let sections: Vec<&str> = clean_content.split("\n\n").collect();
 
     let mut fresh_date = Vec::new();
     let mut products = Vec::new();
 
     // on stock les ranges
-    if let Some(range_section) = sections.get(0) {
+    if let Some(range_section) = sections.first() {
         for line in range_section.lines() {
             let parts: Vec<&str> = line.split('-').collect();
             if parts.len() == 2 {
@@ -53,7 +56,6 @@ pub fn d5p1_v1(s: &str) -> u64 {
         .map(|r| r.end.saturating_sub(r.start).saturating_add(1))
         .sum();
 
-    const SEUIL_MATERIALISATION: u64 = 25_000_000;
     if total_ids > SEUIL_MATERIALISATION {
         return d5p1_v2(s);
     }
@@ -106,9 +108,7 @@ pub fn d5p2_v1(s: &str) -> u64 {
     let mut total: u64 = 0;
     let mut current = fresh_date[0];
 
-    for i in 1..fresh_date.len() {
-        let next = fresh_date[i];
-
+    for next in fresh_date.iter().skip(1) {
         if next.start <= current.end {
             // chevauchement : on étend la borne droite si besoin
             current.end = current.end.max(next.end);
@@ -118,7 +118,7 @@ pub fn d5p2_v1(s: &str) -> u64 {
         } else {
             // gap : on ferme la range courante et on en démarre une nouvelle
             total += (current.end - current.start) + 1;
-            current = next;
+            current = *next;
         }
     }
 
@@ -140,13 +140,11 @@ pub fn d5p2(s: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::d5::{d5p1, d5p2};
-
     #[test]
     fn d5p1_test() {
         let s = include_str!("d5_test.txt");
-        let result = d5p1(s);
-        println!("result: {}", result);
+        let result = super::d5p1(s);
+        println!("result: {result}");
         // ranges : 3-5, 10-14, 16-20, 12-18
         // produits : 1, 5, 8, 11, 17, 32
         // 5 (in 3-5), 11 (in 10-14), 17 (in 12-18 / 16-20) -> 3 produits frais
@@ -156,8 +154,8 @@ mod tests {
     #[test]
     fn d5p2_test() {
         let s = include_str!("d5_test.txt");
-        let result = d5p2(s);
-        println!("result: {}", result);
+        let result = super::d5p2(s);
+        println!("result: {result}");
         // union des ranges :
         // 3-5 -> 3 ids
         // 10-14 fusionnée avec 12-18 fusionnée avec 16-20 -> 10-20 -> 11 ids

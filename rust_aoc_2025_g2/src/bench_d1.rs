@@ -7,20 +7,20 @@ mod d1;
 pub fn d1p1(c: &mut Criterion) {
     let mut group = c.benchmark_group("d1p1");
     group.bench_function("d1p1_v1", |b| {
-        b.iter(|| d1p1_v1(black_box(include_str!("d1/d1.txt"))))
+        b.iter(|| d1p1_v1(black_box(include_str!("d1/d1.txt"))));
     });
     group.bench_function("d1p1_v2", |b| {
-         b.iter(|| d1p1_v2(black_box(include_str!("d1/d1.txt"))))
+        b.iter(|| d1p1_v2(black_box(include_str!("d1/d1.txt"))));
      });
 }
 
 pub fn d1p2(c: &mut Criterion) {
     let mut group = c.benchmark_group("d1p2");
     group.bench_function("d1p2_v1", |b| {
-        b.iter(|| d1p2_v1(black_box(include_str!("d1/d1.txt"))))
+        b.iter(|| d1p2_v1(black_box(include_str!("d1/d1.txt"))));
     });
     group.bench_function("d1p2_v2", |b| {
-         b.iter(|| d1p2_v2(black_box(include_str!("d1/d1.txt"))))
+        b.iter(|| d1p2_v2(black_box(include_str!("d1/d1.txt"))));
     });
 
 }

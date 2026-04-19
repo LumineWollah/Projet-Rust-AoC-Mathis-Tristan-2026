@@ -72,38 +72,40 @@ pub fn d3p1_v2(s: &str) -> i64 {
 #[allow(unused)]
 pub fn d3p2_v1(s: &str) -> i64 {
     fn max_joltage_bank(line: &str) -> i64 {
-        let s: Vec<u8> = line.bytes().map(|b| b - b'0').collect();
-        let n = s.len();
-        let k = 12;
-        if n < k {
+        const PICK_COUNT: usize = 12;
+
+        let digits_line: Vec<u8> = line.bytes().map(|byte| byte - b'0').collect();
+        let len_line = digits_line.len();
+        if len_line < PICK_COUNT {
             return 0;
         }
 
         // dp[i][t] = meilleur nombre à t chiffres obtenu avec les caractères d'indice >= i
-        let mut dp = vec![vec![None::<i64>; k + 1]; n + 1];
-        for i in 0..=n {
-            dp[i][0] = Some(0);
+        let mut dp = vec![vec![None::<i64>; PICK_COUNT + 1]; len_line + 1];
+        for row in dp.iter_mut().take(len_line + 1) {
+            row[0] = Some(0);
         }
-        for t in 1..=k {
-            dp[n][t] = None;
+        for slot in dp[len_line].iter_mut().skip(1) {
+            *slot = None;
         }
 
-        for i in (0..n).rev() {
-            for t in 1..=k {
-                let skip = dp[i + 1][t];
-                let take = dp[i + 1][t - 1].map(|sub| {
-                    i64::from(s[i]) * 10_i64.pow((t - 1) as u32) + sub
+        for idx in (0..len_line).rev() {
+            for pick_len in 1..=PICK_COUNT {
+                let skip = dp[idx + 1][pick_len];
+                let exp = u32::try_from(pick_len - 1).expect("pick_len <= 12 fits u32");
+                let take = dp[idx + 1][pick_len - 1].map(|sub| {
+                    i64::from(digits_line[idx]) * 10_i64.pow(exp) + sub
                 });
-                dp[i][t] = match (skip, take) {
-                    (Some(a), Some(b)) => Some(a.max(b)),
-                    (Some(a), None) => Some(a),
-                    (None, Some(b)) => Some(b),
+                dp[idx][pick_len] = match (skip, take) {
+                    (Some(skip_best), Some(take_best)) => Some(skip_best.max(take_best)),
+                    (Some(skip_best), None) => Some(skip_best),
+                    (None, Some(take_best)) => Some(take_best),
                     (None, None) => None,
                 };
             }
         }
 
-        dp[0][k].unwrap_or(0)
+        dp[0][PICK_COUNT].unwrap_or(0)
     }
 
     let mut count: i64 = 0;
@@ -120,7 +122,7 @@ pub fn d3p2_v1(s: &str) -> i64 {
 // encore « payer » des suppressions pour maximiser les 12 premiers de la pile finale.
 #[allow(unused)]
 pub fn d3p2_v2(s: &str) -> i64 {
-    fn max_joltage_bank(line: String) -> i64 {
+    fn max_joltage_bank(line: &str) -> i64 {
         let chars: Vec<char> = line.chars().collect();
         if chars.len() < 12 {
             return 0;
@@ -129,12 +131,12 @@ pub fn d3p2_v2(s: &str) -> i64 {
         let mut removed = 0;
         let mut stack: Vec<char> = Vec::new();
 
-        for c in chars {
-            while removed < to_remove && !stack.is_empty() && stack.last().unwrap() < &c {
+        for ch in chars {
+            while removed < to_remove && !stack.is_empty() && stack.last().is_some_and(|last| last < &ch) {
                 stack.pop();
                 removed += 1;
             }
-            stack.push(c);
+            stack.push(ch);
         }
 
         let result_str: String = stack.iter().take(12).collect();
@@ -146,7 +148,7 @@ pub fn d3p2_v2(s: &str) -> i64 {
         if bank.trim().is_empty() {
             continue;
         }
-        count += max_joltage_bank(bank.to_string());
+        count += max_joltage_bank(bank);
     }
     count
 }
@@ -163,13 +165,11 @@ pub fn d3p2(s: &str) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::d3::{d3p1, d3p2};
-
     #[test]
     fn d3p1_test() {
         let s = include_str!("d3_test.txt");
-        let result: i64 = d3p1(s);
-        println!("result: {}", result);
+        let result: i64 = super::d3p1(s);
+        println!("result: {result}");
         // exemple officiel AoC : 98 + 89 + 78 + 92
         assert_eq!(357, result);
     }
@@ -177,8 +177,8 @@ mod tests {
     #[test]
     fn d3p2_test() {
         let s = include_str!("d3_test.txt");
-        let result: i64 = d3p2(s);
-        println!("result: {}", result);
+        let result: i64 = super::d3p2(s);
+        println!("result: {result}");
         assert_eq!(3_121_910_778_619, result);
     }
 }

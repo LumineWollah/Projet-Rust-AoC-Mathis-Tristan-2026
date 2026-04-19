@@ -9,14 +9,14 @@ mod d7;
 pub fn d7p1(c: &mut Criterion) {
     let mut group = c.benchmark_group("d7p1");
     group.bench_function("d7p1_v2", |b| {
-        b.iter(|| d7p1_v2(black_box(include_str!("d7/d7.txt"))))
+        b.iter(|| d7p1_v2(black_box(include_str!("d7/d7.txt"))));
     });
 }
 
 pub fn d7p2(c: &mut Criterion) {
     let mut group = c.benchmark_group("d7p2");
     group.bench_function("d7p2_v1", |b| {
-        b.iter(|| d7p2_v1(black_box(include_str!("d7/d7.txt"))))
+        b.iter(|| d7p2_v1(black_box(include_str!("d7/d7.txt"))));
     });
 }
 

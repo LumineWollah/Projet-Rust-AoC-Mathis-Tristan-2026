@@ -14,9 +14,9 @@ fn parse_grid_and_start(s: &str) -> (Vec<Vec<char>>, usize, usize) {
 
     let mut start_x = 0usize;
     let mut start_y = 0usize;
-    for y in 0..height {
-        for x in 0..width {
-            if grid[y][x] == 'S' {
+    for (y, row) in grid.iter().enumerate().take(height) {
+        for (x, &ch) in row.iter().enumerate().take(width) {
+            if ch == 'S' {
                 start_x = x;
                 start_y = y;
             }
@@ -56,11 +56,11 @@ pub fn d7p1_v1(s: &str) -> u64 {
         let current_y = queue[head].y;
         head += 1;
 
-        for y in (current_y + 1)..height {
-            if grid[y][current_x] == '^' {
+        for (y, row) in grid.iter().enumerate().skip(current_y + 1) {
+            if row[current_x] == '^' {
                 let splitter_pos = Pos { x: current_x, y };
 
-                if visited_splitters.iter().any(|&p| p == splitter_pos) {
+                if visited_splitters.contains(&splitter_pos) {
                     break;
                 }
 
@@ -106,8 +106,8 @@ pub fn d7p1_v2(s: &str) -> u64 {
         let curr = queue[head];
         head += 1;
 
-        for y in (curr.y + 1)..height {
-            if grid[y][curr.x] == '^' {
+        for (y, row) in grid.iter().enumerate().skip(curr.y + 1) {
+            if row[curr.x] == '^' {
                 let splitter_pos = Pos { x: curr.x, y };
 
                 // si on l'a déjà split celui-là, on s'arrête
@@ -171,8 +171,8 @@ pub fn d7p2_v1(s: &str) -> u64 {
         let mut hit_splitter = false;
 
         // le faisceau descend
-        for y in (curr_pos.y + 1)..height {
-            if grid[y][curr_pos.x] == '^' {
+        for (y, row) in grid.iter().enumerate().skip(curr_pos.y + 1) {
+            if row[curr_pos.x] == '^' {
                 // chaque timeline actuelle se divise en 2
                 // mais elles arrivent sur le même splitter
 
@@ -214,13 +214,11 @@ pub fn d7p2(s: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::d7::{d7p1, d7p2};
-
     #[test]
     fn d7p1_test() {
         let s = include_str!("d7_test.txt");
-        let result = d7p1(s);
-        println!("result: {}", result);
+        let result = super::d7p1(s);
+        println!("result: {result}");
         // nombre de splitters uniques atteints (chaque '^' n'est compté qu'une fois)
         // sur le grid pyramidal du fichier de test
         assert_eq!(21, result);
@@ -229,8 +227,8 @@ mod tests {
     #[test]
     fn d7p2_test() {
         let s = include_str!("d7_test.txt");
-        let result = d7p2(s);
-        println!("result: {}", result);
+        let result = super::d7p2(s);
+        println!("result: {result}");
         // chaque splitter double les timelines qui le traversent, et on additionne
         // toutes les timelines qui sortent en bas du grid sans toucher de splitter.
         assert_eq!(40, result);
